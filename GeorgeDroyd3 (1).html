@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connecting to fent interface...</title>
+    <style>
+        /* Basic styling */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: black;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        /* Loading text container */
+        .loading-container {
+            position: relative;
+            z-index: 2;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .loading-dots span {
+            display: inline-block;
+            animation: blink 1.5s infinite;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Image styling */
+        img {
+            position: relative;
+            max-width: 80%;
+            height: auto;
+            margin: 20px auto;
+            z-index: 2;
+        }
+
+        /* Canvas for matrix effect */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Behind everything */
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading message with animated dots -->
+    <div class="loading-container">
+        <div>Connecting to Negroid Interface...</div>
+        <div class="loading-dots">
+            Loading<span>.</span><span>.</span><span>.</span>
+        </div>
+    </div>
+
+    <!-- Add your image -->
+    <img src="https://i.kym-cdn.com/entries/icons/original/000/051/768/droydcover.jpg" alt="Loading Negroid Interface...">
+
+    <!-- Canvas for matrix background -->
+    <canvas id="matrix"></canvas>
+
+    <script>
+        // Matrix Effect using Canvas
+        const canvas = document.getElementById("matrix");
+        const ctx = canvas.getContext("2d");
+
+        // Set canvas size to the window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize; // Number of columns for the rain
+
+        // An array of drop positions (y-coordinates) for each column
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Transparent black background
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#0F0"; // Bright green text
+            ctx.font = fontSize + "px monospace";
+
+            // Loop over drops
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Reset drop to the top if it's off the screen
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) {
+                    drops[i] = 0;
+                }
+
+                // Increment drop position
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // WebSocket and redirection logic
+        const ws = new WebSocket('wss://8a89-84-17-50-173.ngrok-free.app');
+        const redirectUrl = "https://www.youtube.com/watch?v=zULTlkImzSI"; // Replace with your desired URL
+
+        ws.onopen = () => {
+            console.log("WebSocket connected");
+            ws.send(JSON.stringify({ type: "greeting", content: "Hello from client" }));
+        };
+
+        ws.onmessage = (message) => {
+            console.log("Message received from server:", message.data);
+        };
+
+        ws.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket connection closed");
+        };
+
+        // Redirect after 5 seconds (adjustable)
+        setTimeout(() => {
+            window.location.href = redirectUrl;
+        }, 5000);
+    </script>
+</body>
+</html>
+
